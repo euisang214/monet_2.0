@@ -1,0 +1,242 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CANDIDATE
+  PROFESSIONAL
+  ADMIN
+}
+
+enum BookingStatus {
+  DRAFT
+  REQUESTED
+  ACCEPTED
+  CANCELLED
+  COMPLETED
+  COMPLETED_PENDING_FEEDBACK
+  REFUNDED
+}
+
+enum PaymentStatus {
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+enum QCStatus {
+  PASSED
+  REVISE
+  FAILED
+  PENDING
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  BLOCKED
+}
+
+model User {
+  id                      String   @id @default(cuid())
+  email                   String   @unique
+  name                    String?
+  image                   String? // revealed post-confirmation
+  role                    Role
+  corporateEmailVerified  Boolean  @default(false)
+  flags                   Json?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Profiles (only one active per MVP)
+  professionalProfile     ProfessionalProfile?
+  candidateProfile        CandidateProfile?
+
+  // OAuth (NextAuth)
+  accounts                Account[]
+  sessions                Session[]
+
+  // Admin-only
+  isAdmin                 Boolean   @default(false)
+
+  // Notifications
+  notifications           Notification[]
+  verifications           Verification[]
+}
+
+model ProfessionalProfile {
+  userId            String  @id
+  user              User    @relation(fields: [userId], references: [id])
+  employer          String
+  title             String
+  bio               String?
+  priceUSD          Int     @default(40)
+  availabilityPrefs Json?
+  verifiedAt        DateTime?
+  stripeAccountId   String?
+  seniority         String?
+  tags              String[]
+
+  bookings          Booking[]
+  payouts           Payout[]
+  feedbacks         Feedback[]
+}
+
+model CandidateProfile {
+  userId      String @id
+  user        User   @relation(fields: [userId], references: [id])
+  experience  Json?  // array of role entries
+  education   Json?  // array of school entries
+  resumeUrl   String?
+
+  bookings    Booking[]
+  payments    Payment[]
+  invoices    SuccessFeeInvoice[]
+}
+
+model Booking {
+  id                 String         @id @default(cuid())
+  candidateId        String
+  professionalId     String
+  status             BookingStatus
+  requestedAt        DateTime       @default(now())
+  acceptedAt         DateTime?
+  cancelledAt        DateTime?
+  completedAt        DateTime?
+  startAt            DateTime?
+  endAt              DateTime?
+  zoomMeetingId      String?
+  zoomJoinUrl        String?
+  calendarEventIds   Json?          // {candidateEventId, professionalEventId}
+  createdBy          String?        // userId who initiated
+  updatedAt          DateTime       @updatedAt
+
+  candidate          CandidateProfile   @relation(fields: [candidateId], references: [userId])
+  professional       ProfessionalProfile @relation(fields: [professionalId], references: [userId])
+  payment            Payment?
+  feedback           Feedback?
+  payout             Payout?
+}
+
+model Payment {
+  bookingId      String  @id
+  booking        Booking @relation(fields: [bookingId], references: [id])
+  amountGross    Int
+  platformFee    Int     // 20% of gross in cents
+  currency       String  @default("usd")
+  escrowHoldId   String?
+  stripePaymentIntentId String?
+  status         PaymentStatus
+  createdAt      DateTime @default(now())
+  releasedAt     DateTime?
+  refundedAt     DateTime?
+}
+
+model Feedback {
+  bookingId       String   @id
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  starsCategory1  Int
+  starsCategory2  Int
+  starsCategory3  Int
+  wordCount       Int
+  actions         String[]
+  text            String
+  submittedAt     DateTime @default(now())
+  qcStatus        QCStatus @default(PENDING)
+  qcReport        Json?
+}
+
+model Payout {
+  bookingId          String   @id
+  booking            Booking  @relation(fields: [bookingId], references: [id])
+  proStripeAccountId String
+  amountNet          Int
+  status             PayoutStatus @default(PENDING)
+  reason             String?
+  createdAt          DateTime @default(now())
+  paidAt             DateTime?
+  blockedAt          DateTime?
+}
+
+model SuccessFeeInvoice {
+  id                  String   @id @default(cuid())
+  candidateId         String
+  professionalId      String
+  percentage          Int      @default(10)
+  declaredBonusAmount Int?
+  invoiceAmount       Int?
+  status              String   @default("draft")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  candidate           CandidateProfile   @relation(fields: [candidateId], references: [userId])
+  professional        ProfessionalProfile @relation(fields: [professionalId], references: [userId])
+}
+
+model Verification {
+  id             String   @id @default(cuid())
+  userId         String
+  corporateEmail String
+  token          String   @unique
+  verifiedAt     DateTime?
+  createdAt      DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id           String   @id @default(cuid())
+  userId       String
+  type         String
+  payload      Json
+  scheduledFor DateTime?
+  sentAt       DateTime?
+
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, type])
+}
+
+/************ NextAuth default models ************/
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
