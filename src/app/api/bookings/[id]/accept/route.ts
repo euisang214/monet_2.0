@@ -1,7 +1,7 @@
 
 // POST /api/bookings/[id]/accept
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;

@@ -1,8 +1,8 @@
 
 // POST /api/bookings/[id]/schedule
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import { createZoomMeeting } from '@/src/lib/zoom';
+import { prisma } from '@/lib/prisma';
+import { createZoomMeeting } from '@/lib/zoom';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
