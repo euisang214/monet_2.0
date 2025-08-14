@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import LinkedIn from "next-auth/providers/linkedin";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -18,8 +18,8 @@ const handler = NextAuth({
           id: profile.id,
           name: profile.localizedFirstName ? `${profile.localizedFirstName} ${profile.localizedLastName ?? ""}`.trim() : null,
           email: profile.email ?? null,
-          image: null, // keep photo hidden pre-booking (store null by default)
-        } as any;
+          image: null,
+        } as { id: string; name: string | null; email: string | null; image: string | null };
       }
     }),
     Google({
@@ -32,9 +32,7 @@ const handler = NextAuth({
   ],
   callbacks: {
     async session({ session, user }) {
-      // Attach role for RBAC
-      (session as any).role = user.role;
-      return session;
+      return { ...session, role: user.role };
     },
   },
 });

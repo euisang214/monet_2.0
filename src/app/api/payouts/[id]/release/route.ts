@@ -1,8 +1,8 @@
 
 // POST /api/payouts/[id]/release  (bookingId)
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import { transferToPro } from '@/src/lib/stripe';
+import { prisma } from '@/lib/prisma';
+import { transferToPro } from '@/lib/stripe';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const bookingId = params.id;

@@ -4,9 +4,8 @@
  * Wire these to your cron/queue (e.g., Vercel Cron, Inngest, or a worker dyno).
  */
 
-import { prisma } from '@/src/lib/prisma';
-import { refundPaymentIntent, transferToPro } from '@/src/lib/stripe';
-import { priceToPayout } from '@/src/domain/booking';
+import { prisma } from '@/lib/prisma';
+import { refundPaymentIntent, transferToPro } from '@/lib/stripe';
 
 export async function runPostCallSweep(now = new Date()) {
   // 1) Mark bookings that ended to COMPLETED_PENDING_FEEDBACK (if not already)
@@ -17,11 +16,7 @@ export async function runPostCallSweep(now = new Date()) {
   return ended.count;
 }
 
-export async function runFeedbackNudges(now = new Date()) {
-  const oneHourAgo = new Date(now.getTime() - 60*60*1000);
-  const day1 = new Date(now.getTime() - 24*60*60*1000);
-  const day2 = new Date(now.getTime() - 48*60*60*1000);
-
+export async function runFeedbackNudges() {
   // TODO: send notifications for +1h, +24h, +48h reminders to pros with missing feedback
   return { queued: 0 };
 }
@@ -49,7 +44,7 @@ export async function runAutoRefunds(now = new Date()) {
   return count;
 }
 
-export async function runPayouts(now = new Date()) {
+export async function runPayouts() {
   // Payout any pending payouts that passed QC
   const payouts = await prisma.payout.findMany({ where: { status: 'PENDING' }, include: { booking: { include: { payment: true } } } });
   let paid = 0;

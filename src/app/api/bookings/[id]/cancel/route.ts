@@ -1,9 +1,9 @@
 
 // POST /api/bookings/[id]/cancel
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import { computeCancellationPolicy } from '@/src/domain/booking';
-import { refundPaymentIntent } from '@/src/lib/stripe';
+import { prisma } from '@/lib/prisma';
+import { computeCancellationPolicy } from '@/domain/booking';
+import { refundPaymentIntent } from '@/lib/stripe';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;

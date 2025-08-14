@@ -1,5 +1,5 @@
 
-import { google } from 'googleapis';
+import { google, calendar_v3 } from 'googleapis';
 
 export function getOAuthClient() {
   const client = new google.auth.OAuth2(
@@ -24,7 +24,11 @@ export async function getFreeBusy(accessToken: string, refreshToken: string, tim
   return res.data;
 }
 
-export async function createEvent(accessToken: string, refreshToken: string, event: any) {
+export async function createEvent(
+  accessToken: string,
+  refreshToken: string,
+  event: calendar_v3.Schema$Event
+) {
   const client = getOAuthClient();
   client.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
   const calendar = google.calendar({ version: 'v3', auth: client });

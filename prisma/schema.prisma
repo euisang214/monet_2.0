@@ -84,9 +84,8 @@ model ProfessionalProfile {
   tags              String[]
 
   bookings          Booking[]
-  payouts           Payout[]
-  feedbacks         Feedback[]
-}
+  invoices          SuccessFeeInvoice[]
+  }
 
 model CandidateProfile {
   userId      String @id
@@ -96,9 +95,8 @@ model CandidateProfile {
   resumeUrl   String?
 
   bookings    Booking[]
-  payments    Payment[]
   invoices    SuccessFeeInvoice[]
-}
+  }
 
 model Booking {
   id                 String         @id @default(cuid())
