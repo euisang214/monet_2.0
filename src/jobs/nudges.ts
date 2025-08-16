@@ -17,8 +17,32 @@ export async function runPostCallSweep(now = new Date()) {
 }
 
 export async function runFeedbackNudges() {
-  // TODO: send notifications for +1h, +24h, +48h reminders to pros with missing feedback
-  return { queued: 0 };
+  const now = new Date();
+  const bookings = await prisma.booking.findMany({
+    where: { status: 'COMPLETED_PENDING_FEEDBACK', endAt: { not: null } },
+    select: { id: true, professionalId: true, endAt: true },
+  });
+
+  let queued = 0;
+  for (const b of bookings) {
+    const end = b.endAt!;
+    const reminders = [1, 24, 48].map(h => new Date(end.getTime() + h * 60 * 60 * 1000));
+    for (const scheduledFor of reminders) {
+      if (scheduledFor > now) {
+        await prisma.notification.create({
+          data: {
+            userId: b.professionalId,
+            type: 'FEEDBACK_REMINDER',
+            payload: { bookingId: b.id },
+            scheduledFor,
+          },
+        });
+        queued++;
+      }
+    }
+  }
+
+  return { queued };
 }
 
 export async function runAutoRefunds(now = new Date()) {

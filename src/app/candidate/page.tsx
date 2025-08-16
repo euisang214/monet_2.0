@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { bookings, professionals } from "@/data/mock";
+import { bookings, professionals } from "@/lib/mockData";
 import { usd, dateTime } from "@/lib/format";
 
 export default function CandidateDashboard() {

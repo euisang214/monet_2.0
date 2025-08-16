@@ -1,7 +1,7 @@
 import DashboardSidebar from "@/components/DashboardSidebar";
 
 export default function ProEarnings(){
-  const rows = Array.from({length:5}).map((_,i)=>({date:"July 15, 2024", desc:"Expert Call with Liam Carter", amt:"+$50", status:"Completed"}));
+  const rows = Array.from({length:5}).map(()=>({date:"July 15, 2024", desc:"Expert Call with Liam Carter", amt:"+$50", status:"Completed"}));
   return (
     <div className="container-narrow py-8 flex gap-8">
       <DashboardSidebar role="professional" />

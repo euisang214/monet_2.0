@@ -13,6 +13,11 @@ export const candidates: Candidate[] = [
   { id:"cand_2", name:"Hidden", education:["MBA — Top School"], experience:["Equity Research Intern — Buy-side"] },
 ];
 
+export const bookings = [
+  { id: "book_1", candidateId: "cand_1", professionalId: "pro_1", status: "accepted", startAt: "2025-10-02T14:00:00.000Z" },
+  { id: "book_2", candidateId: "cand_1", professionalId: "pro_2", status: "requested", startAt: null },
+];
+
 export const demoAvailability: AvailabilitySlot[] = [
   // A handful of sample free/busy windows over a week
   { start:"2025-10-01T13:00:00.000Z", end:"2025-10-01T13:30:00.000Z", status:"available" },
