@@ -5,8 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { computeCancellationPolicy } from '@/domain/booking';
 import { refundPaymentIntent } from '@/lib/stripe';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
   const { who } = body as { who: 'candidate'|'professional' };
 

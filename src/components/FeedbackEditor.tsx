@@ -3,7 +3,15 @@ import { useMemo, useState } from "react";
 
 const MIN_WORDS = 200;
 
-export default function FeedbackEditor({ onSubmit }: { onSubmit: (payload: any) => void }) {
+export interface FeedbackPayload {
+  stars1: number;
+  stars2: number;
+  stars3: number;
+  text: string;
+  actions: string[];
+}
+
+export default function FeedbackEditor({ onSubmit }: { onSubmit: (payload: FeedbackPayload) => void }) {
   const [stars1, setStars1] = useState(0);
   const [stars2, setStars2] = useState(0);
   const [stars3, setStars3] = useState(0);
